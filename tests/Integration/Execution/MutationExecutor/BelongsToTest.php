@@ -307,6 +307,40 @@ GRAPHQL
         ]);
     }
 
+    public function testUpsertBelongsToWithIDNull(): void
+    {
+        $this->graphQL(/** @lang GraphQL */ <<<'GRAPHQL'
+        mutation {
+            upsertTask(input: {
+                name: "foo"
+                user: {
+                    upsert: {
+                        id: null
+                        name: "New User"
+                    }
+                }
+            }) {
+                id
+                name
+                user {
+                    id
+                }
+            }
+        }
+GRAPHQL
+        )->assertJson([
+            'data' => [
+                'upsertTask' => [
+                    'id' => '1',
+                    'name' => 'foo',
+                    'user' => [
+                        'id' => '1',
+                    ],
+                ],
+            ],
+        ]);
+    }
+
     public function testUpsertUsingCreateWithNewBelongsTo(): void
     {
         $this->graphQL(/** @lang GraphQL */ '
@@ -515,7 +549,6 @@ GRAPHQL
 
         $queries = [];
         DB::listen(static function (QueryExecuted $query) use (&$queries): void {
-            dump($query->sql);
             $queries[] = $query->sql;
         });
 
